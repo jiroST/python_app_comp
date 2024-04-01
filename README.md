@@ -1,5 +1,10 @@
 # python_app_comp
 
+TODO!!!
+Jiro: Filtering, Price comparison
+Pinja: Price/Rating ratio
+Luke: Rating analysis
+
 This project analyzes two datasets: App store app reviews and play store app reviews. 
 The main focus is to compare datasets for app reviews, price and user feedback. 
 Results are implemented visually. 
