@@ -10,4 +10,4 @@ if __name__ == "__main__":
     filtered_play_store, filtered_app_store = filter_matching_names(play_store_data, app_store_data)
     #filtered_play_store.to_csv('../data/filtered/filtered_googleplaystore.csv', index=False)
     #filtered_app_store.to_csv('../data/filtered/filteredAppleStore.csv', index=False)
-    match_pie_chart(play_store_data, app_store_data)
+    merge_data(play_store_data, app_store_data)

@@ -29,6 +29,32 @@ def filter_matching_names(gp_data, as_data):
     return matching_gp, matching_as
 
 
+def merge_data(gp_data, as_data):
+    gp_columns = {
+        'App': 'Name',  
+        'Price': 'Google Play Price',
+        'Rating': 'Google Play Rating',
+        'Size': 'Google Play Size',
+        'Genres': 'Google Play Genre',
+        'Reviews': 'Google Play Reviews'
+    }
+    gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
+    gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
+
+    as_columns = {
+        'track_name': 'Name',  
+        'price': 'App Store Price',
+        'user_rating': 'App Store Rating',
+        'size_bytes': 'App Store Size',
+        'prime_genre': 'App Store Genre',
+        'rating_count_tot': 'App Store Reviews'
+    }
+    as_data_renamed = as_data[as_columns.keys()].rename(columns=as_columns)
+    as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
+
+    merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
+    merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+
 def price_comparison(gp_data, as_data):
     '''
     This function creates a table that lists app prices from both datasets, excluding free apps.
