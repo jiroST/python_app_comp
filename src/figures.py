@@ -26,8 +26,7 @@ def ratings_visualization(merged_data_bygenre):
     statistical analyses and visualizations of ratings
     '''
 
-    unique_genres = merged_data_bygenre['Genre'].unique()
-    #print(merged_data_bygenre.head(10))
-
-    art_design = merged_data_bygenre[merged_data_bygenre['Genre'] == 'Entertainment']
-    print(art_design.head(10))
+    avg_ratings = merged_data_bygenre.groupby('Genre').agg({'Google Play Rating': 'mean', 'App Store Rating': 'mean'}).reset_index()
+    avg_ratings['Google Play Rating'] = avg_ratings['Google Play Rating'].round(2)
+    avg_ratings['App Store Rating'] = avg_ratings['App Store Rating'].round(2)
+    print(avg_ratings)
