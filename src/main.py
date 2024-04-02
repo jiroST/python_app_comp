@@ -10,4 +10,7 @@ if __name__ == "__main__":
     filtered_play_store, filtered_app_store = filter_matching_names(play_store_data, app_store_data)
     #filtered_play_store.to_csv('../data/filtered/filtered_googleplaystore.csv', index=False)
     #filtered_app_store.to_csv('../data/filtered/filteredAppleStore.csv', index=False)
-    merge_data(play_store_data, app_store_data)
+    merged_data, merged_data_bygenre = merge_data(play_store_data, app_store_data)
+
+    ratings_visualization(merged_data_bygenre)
+

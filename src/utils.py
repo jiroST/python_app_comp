@@ -35,7 +35,7 @@ def merge_data(gp_data, as_data):
         'Price': 'Google Play Price',
         'Rating': 'Google Play Rating',
         'Size': 'Google Play Size',
-        'Genres': 'Google Play Genre',
+        'Genres': 'Genre',
         'Reviews': 'Google Play Reviews'
     }
     gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
@@ -46,7 +46,7 @@ def merge_data(gp_data, as_data):
         'price': 'App Store Price',
         'user_rating': 'App Store Rating',
         'size_bytes': 'App Store Size',
-        'prime_genre': 'App Store Genre',
+        'prime_genre': 'Genre',
         'rating_count_tot': 'App Store Reviews'
     }
     as_data_renamed = as_data[as_columns.keys()].rename(columns=as_columns)
@@ -54,6 +54,15 @@ def merge_data(gp_data, as_data):
 
     merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
     merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+
+    merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
+    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')
+    merged_data_bygenre = merged_data_bygenre.explode('Genre')
+    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(x)).reset_index()
+    merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']] # Creating a DF with only App Store and Play Store ratings indexed by Genre
+
+    return merged_data, merged_data_bygenre
+
 
 def price_comparison(gp_data, as_data):
     '''
@@ -75,4 +84,4 @@ def price_comparison(gp_data, as_data):
 
     #TBC!!!
 
-    return merged_data
+    return
