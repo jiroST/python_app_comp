@@ -55,11 +55,11 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
-<<<<<<< HEAD
+
     merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';') # Splitting any double-named entries
-=======
+
     merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].astype(str).str.split(';')
->>>>>>> 6346f603d51ed412f3bdaa9c0b0dd85a25a3f073
+
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
     merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index() # Re-joining the split entries
 
