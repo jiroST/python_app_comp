@@ -55,7 +55,11 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
+<<<<<<< HEAD
     merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';') # Splitting any double-named entries
+=======
+    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].astype(str).str.split(';')
+>>>>>>> 6346f603d51ed412f3bdaa9c0b0dd85a25a3f073
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
     merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index() # Re-joining the split entries
 
@@ -99,13 +103,14 @@ def merge_data(gp_data, as_data):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
-    merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+    merged_data = correct_data_types(merged_data)
+    merged_data.to_csv("../data/filtered/merged_data.csv", index=False, na_rep='NaN')
     return merged_data
 
 def compare_price_std_avg_visualized(data, categories):
-    filtered = data['Google Play Price'].str.contains(r'^\$?\d+(\.\d+)?$', na=False)
+    filtered = data['Google Play Price'].astype(str).str.contains(r'^\$?\d+(\.\d+)?$', na=False)
     data = data[filtered]
-    data['Google Play Price'] = data['Google Play Price'].str.replace('$', '').astype(float)
+    data['Google Play Price'] = data['Google Play Price'].astype(str).str.replace('$', '').astype(float)
 
     gp_std_devs = []
     as_std_devs = []
@@ -113,8 +118,8 @@ def compare_price_std_avg_visualized(data, categories):
     as_avgs = []
 
     for category in categories:
-        google_play_data = data[data['Google Play Genre'].str.contains(category, na=False, case=False)]
-        app_store_data = data[data['App Store Genre'].str.contains(category, na=False, case=False)]
+        google_play_data = data[data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)]
+        app_store_data = data[data['App Store Genre'].astype(str).str.contains(category, na=False, case=False)]
         
         gp_std_devs.append(google_play_data['Google Play Price'].std())
         as_std_devs.append(app_store_data['App Store Price'].std())
@@ -154,8 +159,8 @@ def correct_data_types(merged_data):
     '''
     Makes numbers numbers and removes extra things.
     '''
+    merged_data['Google Play Price'] = merged_data['Google Play Price'].astype(str).str.replace('$', '')
     merged_data['Google Play Price'] = pd.to_numeric(merged_data['Google Play Price'], errors='coerce')
-    merged_data['Google Play Price'] = merged_data['Google Play Price'].str.replace('$', '')
     merged_data['App Store Price'] = pd.to_numeric(merged_data['App Store Price'], errors='coerce')
     merged_data['Google Play Rating'] = pd.to_numeric(merged_data['Google Play Rating'], errors='coerce')
     merged_data['App Store Rating'] = pd.to_numeric(merged_data['App Store Rating'], errors='coerce')
