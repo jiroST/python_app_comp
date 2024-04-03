@@ -30,3 +30,81 @@ def ratings_visualization(merged_data_bygenre):
     avg_ratings['Google Play Rating'] = avg_ratings['Google Play Rating'].round(2)
     avg_ratings['App Store Rating'] = avg_ratings['App Store Rating'].round(2)
     print(avg_ratings)
+
+def price_rating_correlation(merged_data):
+    '''
+    Function for visualizing the correlation between application price and 
+    average rating. Includes both Apple app store and Google play store data.
+    Also prints the amount of outliers. 
+    '''
+    
+    merged_data.head()
+    merged_data['Google Play Price'] = pd.to_numeric(merged_data['Google Play Price'], errors='coerce')
+    merged_data['App Store Price'] = pd.to_numeric(merged_data['App Store Price'], errors='coerce')
+    merged_data['Google Play Rating'] = pd.to_numeric(merged_data['Google Play Rating'], errors='coerce')
+    merged_data['App Store Rating'] = pd.to_numeric(merged_data['App Store Rating'], errors='coerce')    #Google Play Price,Google Play Rating
+    
+    merged_data['App Store Rating'].replace(0, np.nan, inplace=True)
+
+    combined_prices = pd.concat([merged_data['Google Play Price'], merged_data['App Store Price']], ignore_index=True)
+    combined_ratings = pd.concat([merged_data['Google Play Rating'], merged_data['App Store Rating']], ignore_index=True)
+    combined_rewievs = pd.concat([merged_data['Google Play Reviews'], merged_data['App Store Reviews']], ignore_index=True)
+    #rslt_df = dataframe[dataframe['Stream'].isin(options)] 
+    outliers_google = merged_data[merged_data['Google Play Price'] > 50]
+    outliers_apple = merged_data[merged_data['App Store Price'] > 50]
+    print(len(outliers_google)+len(outliers_apple))
+    #combined_df = pd.DataFrame({'combined_prices': combined_prices, 'combined_ratings': combined_ratings})
+    plt.figure(figsize=(10, 6))
+    plt.scatter(merged_data['Google Play Rating'], merged_data['Google Play Price'], label='Play Store', alpha=0.5)
+    plt.scatter(merged_data['App Store Rating'], merged_data['App Store Price'], label='Apple Store', alpha=0.5)
+    #plt.scatter(combined_df['combined_ratings'], combined_df['combined_prices'], alpha=0.5)
+    plt.title('Price vs. Average Rating')
+    plt.xlabel('Average Rating')
+    plt.ylabel('Price (USD)')
+    plt.legend()
+    plt.grid(True)
+
+    plt.figure(figsize=(10, 6))
+    plt.scatter(merged_data['Google Play Rating'], merged_data['Google Play Price'], alpha=0.5)
+    plt.title('Price vs. Average Rating (Play Store)')
+    plt.xlabel('Average Rating')
+    plt.ylabel('Price (USD)')
+    plt.grid(True)
+
+    plt.show()
+
+
+def price_rating_with_ranges(merged_data):
+    '''
+    To help with visualising, price ranges have been set. Pie chart. 
+    The ranges are:
+        free, 0-5 USD, 5-20 USD, 20-50 USD and more than 50 USD.
+    '''
+    pass
+
+def downloads_age_rating():
+    '''
+    Function for analysing the relationship between amount of downloads 
+    and contentrating.
+    '''
+    pass
+
+def downloads_rating_correlation():
+    '''s
+    This function visualizes the relationship between the amount of 
+    downloads and ratings.
+    '''
+    pass
+
+def review_count_rating_correlation():
+    '''
+    This function takes into account the amount of reviews when considering ratings.
+    '''
+    pass
+
+def review_download_ratio():
+    '''
+    This function gives the ratio between total amount of downloads and reviews.
+    '''
+    pass
+

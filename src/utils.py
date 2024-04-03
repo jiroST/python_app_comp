@@ -40,7 +40,7 @@ def merge_data(gp_data, as_data):
     }
     gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
     gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
-
+    
     as_columns = {
         'track_name': 'Name',  
         'price': 'App Store Price',
@@ -53,12 +53,15 @@ def merge_data(gp_data, as_data):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
-    merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+    merged_data.to_csv("../data/filtered/merged_data.csv", index=False, na_rep='NaN')
+
+    merged_data = correct_data_types(merged_data)
 
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
     merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
-    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(x)).reset_index()
+    #merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(x)).reset_index()
+    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index()
     merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']] # Creating a DF with only App Store and Play Store ratings indexed by Genre
 
     return merged_data, merged_data_bygenre
@@ -85,3 +88,20 @@ def price_comparison(gp_data, as_data):
     #TBC!!!
 
     return
+
+def filter_no_reviews(merged_data):
+    no_reviews = merged_data[merged_data['Google Play Reviews'] == 0 or merge_data['App Store Reviews'] == 0]
+    return no_reviews
+
+def correct_data_types(merged_data):
+    '''
+    Makes numbers numbers and removes extra things.
+    '''
+    merged_data['Google Play Price'] = pd.to_numeric(merged_data['Google Play Price'], errors='coerce')
+    merged_data['Google Play Price'] = merged_data['Google Play Price'].str.replace('$', '')
+    merged_data['App Store Price'] = pd.to_numeric(merged_data['App Store Price'], errors='coerce')
+    merged_data['Google Play Rating'] = pd.to_numeric(merged_data['Google Play Rating'], errors='coerce')
+    merged_data['App Store Rating'] = pd.to_numeric(merged_data['App Store Rating'], errors='coerce')
+    merged_data['App Store Reviews'] = pd.to_numeric(merged_data['App Store Reviews'], errors='coerce')
+
+    return merged_data

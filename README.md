@@ -2,7 +2,7 @@
 
 TODO!!!
 Jiro: Filtering, Price comparison
-Pinja: Price/Rating ratio
+Pinja: Price/Rating ratio, download analysis
 Luke: Rating analysis
 
 This project analyzes two datasets: App store app reviews and play store app reviews. 
