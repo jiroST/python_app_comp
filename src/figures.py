@@ -22,15 +22,40 @@ def match_pie_chart(gp_data, as_data):
 
 def ratings_visualization(merged_data_bygenre):
     '''
-    This functions selects a handful of popular Genres and performs
+    This functions takes a handful of popular Genres and performs
     statistical analyses and visualizations of ratings
     '''
+    avg_app_store_ratings = []
+    avg_google_play_ratings = []
+    genres = merged_data_bygenre['Condensed_Genre']
 
-    avg_ratings = merged_data_bygenre.groupby('Genre').agg({'Google Play Rating': 'mean', 'App Store Rating': 'mean'}).reset_index()
-    avg_ratings['Google Play Rating'] = avg_ratings['Google Play Rating'].round(2)
-    avg_ratings['App Store Rating'] = avg_ratings['App Store Rating'].round(2)
-    print(avg_ratings)
+    # Iterate through each genre
+    for index, row in merged_data_bygenre.iterrows():
+        # Calculate average ratings for App Store (excluding NaN values)
+        app_store_ratings = [rating for rating in row['App Store Rating'] if not pd.isna(rating)]
+        avg_app_store_rating = sum(app_store_ratings) / len(app_store_ratings) if app_store_ratings else None
+        avg_app_store_ratings.append(avg_app_store_rating)
 
+        # Calculate average ratings for Google Play (excluding NaN values)
+        google_play_ratings = [rating for rating in row['Google Play Rating'] if not pd.isna(rating)]
+        avg_google_play_rating = sum(google_play_ratings) / len(google_play_ratings) if google_play_ratings else None
+        avg_google_play_ratings.append(avg_google_play_rating)
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+
+    # Plot average ratings for App Store and Google Play
+    plt.bar(genres, avg_app_store_ratings, color='blue', alpha=0.5, label='App Store')
+    plt.bar(genres, avg_google_play_ratings, color='red', alpha=0.5, label='Google Play')
+
+    plt.legend()
+    plt.xlabel('Genres')
+    plt.ylabel('Average Ratings')
+    plt.title('Average App Store and Google Play Ratings by Genre')
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
 def price_rating_correlation(merged_data):
     '''
     Function for visualizing the correlation between application price and 
