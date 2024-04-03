@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 import re
+import matplotlib.pyplot as plt
+
 
 def clean_name(name):
     '''
@@ -29,7 +31,7 @@ def filter_matching_names(gp_data, as_data):
     return matching_gp, matching_as
 
 
-def merge_data(gp_data, as_data):
+def merge_data_genre(gp_data, as_data):
     gp_columns = {
         'App': 'Name',  
         'Price': 'Google Play Price',
@@ -40,7 +42,7 @@ def merge_data(gp_data, as_data):
     }
     gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
     gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
-    
+
     as_columns = {
         'track_name': 'Name',  
         'price': 'App Store Price',
@@ -52,42 +54,84 @@ def merge_data(gp_data, as_data):
     as_data_renamed = as_data[as_columns.keys()].rename(columns=as_columns)
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
-    merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
-    merged_data.to_csv("../data/filtered/merged_data.csv", index=False, na_rep='NaN')
-
-    merged_data = correct_data_types(merged_data)
-
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
     merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
-    #merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(x)).reset_index()
     merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index()
     merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']] # Creating a DF with only App Store and Play Store ratings indexed by Genre
+    return merged_data_bygenre
 
-    return merged_data, merged_data_bygenre
 
+def merge_data(gp_data, as_data):
+    gp_columns = {
+        'App': 'Name',  
+        'Price': 'Google Play Price',
+        'Rating': 'Google Play Rating',
+        'Size': 'Google Play Size',
+        'Genres': 'Google Play Genre',
+        'Reviews': 'Google Play Reviews'
+    }
+    gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
+    gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
-def price_comparison(gp_data, as_data):
-    '''
-    This function creates a table that lists app prices from both datasets, excluding free apps.
-    It calculates the price difference for mismatched prices, NaN when values match.
-    '''
-    gp_price_data = gp_data[~gp_data['Price'].isin(['0', 'Free', 'NaN'])]
-    as_price_data = as_data[as_data['price'] > 0]
+    as_columns = {
+        'track_name': 'Name',  
+        'price': 'App Store Price',
+        'user_rating': 'App Store Rating',
+        'size_bytes': 'App Store Size',
+        'prime_genre': 'App Store Genre',
+        'rating_count_tot': 'App Store Reviews'
+    }
+    as_data_renamed = as_data[as_columns.keys()].rename(columns=as_columns)
+    as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
-    filtered_gp_price, filtered_as_price = filter_matching_names(gp_price_data, as_price_data)
+    merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
+    merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+    return merged_data
 
-    filtered_gp_price = filtered_gp_price[['App', 'Price']]
-    filtered_as_price = filtered_as_price[['track_name', 'price']]
+def compare_price_std_avg_visualized(data, categories):
+    filtered = data['Google Play Price'].str.contains(r'^\$?\d+(\.\d+)?$', na=False)
+    data = data[filtered]
+    data['Google Play Price'] = data['Google Play Price'].str.replace('$', '').astype(float)
 
-    filtered_gp_price.rename(columns={'Price': 'Play Store Price'}, inplace=True)
-    filtered_as_price.rename(columns={'track_name': 'App', 'price': 'App Store Price'}, inplace=True)
+    gp_std_devs = []
+    as_std_devs = []
+    gp_avgs = []
+    as_avgs = []
 
-    merged_data = pd.merge(filtered_gp_price, filtered_as_price, on='App', how='outer')
+    for category in categories:
+        google_play_data = data[data['Google Play Genre'].str.contains(category, na=False, case=False)]
+        app_store_data = data[data['App Store Genre'].str.contains(category, na=False, case=False)]
+        
+        gp_std_devs.append(google_play_data['Google Play Price'].std())
+        as_std_devs.append(app_store_data['App Store Price'].std())
+        gp_avgs.append(google_play_data['Google Play Price'].mean())
+        as_avgs.append(app_store_data['App Store Price'].mean())
+        
+        print(f"Category: {category}")
+        print(f"  Google Play Avg. Price: ${gp_avgs[-1]:.2f}")
+        print(f"  App Store Avg. Price: ${as_avgs[-1]:.2f}")
+        print(f"  Google Play Price Std. Dev.: ${gp_std_devs[-1]:.2f}")
+        print(f"  App Store Price Std. Dev.: ${as_std_devs[-1]:.2f}")
+        print("")
 
-    #TBC!!!
+    x = range(len(categories))  
+    width = 0.35  
 
-    return
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x, gp_std_devs, width, label='Google Play Std Dev')
+    rects2 = ax.bar([p + width for p in x], as_std_devs, width, label='App Store Std Dev')
+    rects3 = ax.bar(x, gp_avgs, width, bottom=gp_std_devs, label='Google Play Avg Price', alpha=0.5)
+    rects4 = ax.bar([p + width for p in x], as_avgs, width, bottom=as_std_devs, label='App Store Avg Price', alpha=0.5)
+
+    ax.set_ylabel('Prices')
+    ax.set_title('Average and Standard Deviation of Prices by Category and Store')
+    ax.set_xticks([p + width / 2 for p in x])
+    ax.set_xticklabels(categories)
+    ax.legend()
+
+    fig.tight_layout()
+    plt.show()
 
 def filter_no_reviews(merged_data):
     no_reviews = merged_data[merged_data['Google Play Reviews'] == 0 or merge_data['App Store Reviews'] == 0]
@@ -105,3 +149,5 @@ def correct_data_types(merged_data):
     merged_data['App Store Reviews'] = pd.to_numeric(merged_data['App Store Reviews'], errors='coerce')
 
     return merged_data
+
+
