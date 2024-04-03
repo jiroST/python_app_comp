@@ -25,6 +25,7 @@ def ratings_visualization(merged_data_bygenre):
     This functions takes a handful of popular Genres and performs
     statistical analyses and visualizations of ratings
     '''
+
     avg_app_store_ratings = []
     avg_google_play_ratings = []
     genres = merged_data_bygenre['Condensed_Genre']

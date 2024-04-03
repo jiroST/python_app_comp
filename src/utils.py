@@ -55,27 +55,24 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
-
-    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';') # Splitting any double-named entries
-
-    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].astype(str).str.split(';')
-
+    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')  # Splitting any double-named entries
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
-    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index() # Re-joining the split entries
+    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index()  # Re-joining the split entries
 
-    merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']] # Creating a DF with only App Store and Play Store ratings indexed by Genre
+
     merged_data_bygenre.drop(merged_data_bygenre[merged_data_bygenre['Genre'] == 'February 11, 2018'].index, inplace=True) # Removing a particular row
+    merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']]  # Creating a DF with only App Store and Play Store ratings indexed by Genre
+    print(merged_data_bygenre)
 
     exploded_df = merged_data_bygenre.explode('Genre')
     exploded_df['Condensed_Genre'] = exploded_df['Genre'].apply(lambda x: next((key for key, value in category_mapping.items() if x in value), x))
 
-    condensed_df = exploded_df.groupby('Condensed_Genre').agg(
-        {'App Store Rating': list, 'Google Play Rating': list}).reset_index()
+    condensed_df = exploded_df.groupby('Condensed_Genre').agg({'App Store Rating': list, 'Google Play Rating': list}).reset_index()
 
     merged_data_bygenre = condensed_df # Renaming the condensed DataFrame
 
     merged_data_bygenre = merged_data_bygenre[['Condensed_Genre', 'App Store Rating', 'Google Play Rating']]
-
+    print(merged_data_bygenre)
     return merged_data_bygenre
 
 
