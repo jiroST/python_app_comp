@@ -7,16 +7,18 @@ play_store_data = pd.read_csv("../data/googleplaystore.csv")
 app_store_data = pd.read_csv("../data/AppleStore.csv")
 category_mapping = {
     'Games': ['Games', 'Game'],
-    'Health & Fitness': ['Health & Fitness', 'Health & Fitness'],
-    'Social': ['-social', 'Social Networking'], 
-    'Shopping': ['Shopping', 'Shopping'],
-    'Education': ['Education', 'Education']
+    'Health & Fitness': ['Health & Fitness'],
+    'Social': ['Social', 'Social Networking'], 
+    'Shopping': ['Shopping'],
+    'Education': ['Education'], 
+    'Business': ['Business'],
+    'Food & Drink': ['Food & Drink'], 
+    'Music': ['Music'],
+    'Travel': ['Travel', 'Travel & Local']
 }
 
 if __name__ == "__main__":
     filtered_play_store, filtered_app_store = filter_matching_names(play_store_data, app_store_data)
-    #filtered_play_store.to_csv('../data/filtered/filtered_googleplaystore.csv', index=False)
-    #filtered_app_store.to_csv('../data/filtered/filteredAppleStore.csv', index=False)
     
     merged_data_bygenre = merge_data_genre(play_store_data, app_store_data)
     merged_data = merge_data(play_store_data, app_store_data)    
