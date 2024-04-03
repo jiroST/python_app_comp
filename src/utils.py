@@ -62,7 +62,7 @@ def merge_data_genre(gp_data, as_data, category_mapping):
 
     merged_data_bygenre.drop(merged_data_bygenre[merged_data_bygenre['Genre'] == 'February 11, 2018'].index, inplace=True) # Removing a particular row
     merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']]  # Creating a DF with only App Store and Play Store ratings indexed by Genre
-    print(merged_data_bygenre)
+
 
     exploded_df = merged_data_bygenre.explode('Genre')
     exploded_df['Condensed_Genre'] = exploded_df['Genre'].apply(lambda x: next((key for key, value in category_mapping.items() if x in value), x))
@@ -72,7 +72,7 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     merged_data_bygenre = condensed_df # Renaming the condensed DataFrame
 
     merged_data_bygenre = merged_data_bygenre[['Condensed_Genre', 'App Store Rating', 'Google Play Rating']]
-    print(merged_data_bygenre)
+
     return merged_data_bygenre
 
 
