@@ -55,7 +55,7 @@ def merge_data_genre(gp_data, as_data):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
-    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')
+    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].astype(str).str.split(';')
     merged_data_bygenre = merged_data_bygenre.explode('Genre')
     merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index()
     merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']] # Creating a DF with only App Store and Play Store ratings indexed by Genre
@@ -90,9 +90,9 @@ def merge_data(gp_data, as_data):
     return merged_data
 
 def compare_price_std_avg_visualized(data, categories):
-    filtered = data['Google Play Price'].str.contains(r'^\$?\d+(\.\d+)?$', na=False)
+    filtered = data['Google Play Price'].astype(str).str.contains(r'^\$?\d+(\.\d+)?$', na=False)
     data = data[filtered]
-    data['Google Play Price'] = data['Google Play Price'].str.replace('$', '').astype(float)
+    data['Google Play Price'] = data['Google Play Price'].astype(str).str.replace('$', '').astype(float)
 
     gp_std_devs = []
     as_std_devs = []
@@ -100,8 +100,8 @@ def compare_price_std_avg_visualized(data, categories):
     as_avgs = []
 
     for category in categories:
-        google_play_data = data[data['Google Play Genre'].str.contains(category, na=False, case=False)]
-        app_store_data = data[data['App Store Genre'].str.contains(category, na=False, case=False)]
+        google_play_data = data[data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)]
+        app_store_data = data[data['App Store Genre'].astype(str).str.contains(category, na=False, case=False)]
         
         gp_std_devs.append(google_play_data['Google Play Price'].std())
         as_std_devs.append(app_store_data['App Store Price'].std())
@@ -141,8 +141,8 @@ def correct_data_types(merged_data):
     '''
     Makes numbers numbers and removes extra things.
     '''
+    merged_data['Google Play Price'] = merged_data['Google Play Price'].astype(str).str.replace('$', '')
     merged_data['Google Play Price'] = pd.to_numeric(merged_data['Google Play Price'], errors='coerce')
-    merged_data['Google Play Price'] = merged_data['Google Play Price'].str.replace('$', '')
     merged_data['App Store Price'] = pd.to_numeric(merged_data['App Store Price'], errors='coerce')
     merged_data['Google Play Rating'] = pd.to_numeric(merged_data['Google Play Rating'], errors='coerce')
     merged_data['App Store Rating'] = pd.to_numeric(merged_data['App Store Rating'], errors='coerce')
