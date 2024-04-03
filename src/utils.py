@@ -86,7 +86,8 @@ def merge_data(gp_data, as_data):
     as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
 
     merged_data = pd.merge(gp_data_renamed, as_data_renamed, on='Name', how='outer')
-    merged_data.to_csv('../data/filtered/merged_data.csv', index=False, na_rep='NaN')
+    merged_data = correct_data_types(merged_data)
+    merged_data.to_csv("../data/filtered/merged_data.csv", index=False, na_rep='NaN')
     return merged_data
 
 def compare_price_std_avg_visualized(data, categories):
