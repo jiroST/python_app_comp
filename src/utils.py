@@ -12,69 +12,35 @@ def clean_name(name):
     name = re.sub(r'[^a-zA-Z0-9]', '', name)
     return name
 
-
-def filter_matching_names(gp_data, as_data):
-    '''
-    This function finds the matching apps in both datasets by comparing the name columns. It returns the mathing parts from both datasets.  
-    '''
-    gp_data['Name'] = gp_data['App'].apply(clean_name)
-    as_data['Name'] = as_data['track_name'].apply(clean_name)
-
-    gp_names = set(gp_data['Name'])
-    as_names = set(as_data['Name'])
-
-    matched_names = gp_names.intersection(as_names)
-
-    matching_gp = gp_data[gp_data['Name'].isin(matched_names)]
-    matching_as = as_data[as_data['Name'].isin(matched_names)]
-
-    return matching_gp, matching_as
-
-
 def merge_data_genre(gp_data, as_data, category_mapping):
-    gp_columns = {
-        'App': 'Name',  
-        'Price': 'Google Play Price',
-        'Rating': 'Google Play Rating',
-        'Size': 'Google Play Size',
-        'Genres': 'Genre',
-        'Reviews': 'Google Play Reviews'
-    }
-    gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
-    gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
+    gp_data.rename(columns={'App': 'Name'}, inplace=True)
+    gp_data.rename(columns={'Genres': 'Genre'}, inplace=True)
+    as_data.rename(columns={'track_name': 'Name'}, inplace=True)
+    as_data.rename(columns={'prime_genre': 'Genre'}, inplace=True)
 
-    as_columns = {
-        'track_name': 'Name',  
-        'price': 'App Store Price',
-        'user_rating': 'App Store Rating',
-        'size_bytes': 'App Store Size',
-        'prime_genre': 'Genre',
-        'rating_count_tot': 'App Store Reviews'
-    }
-    as_data_renamed = as_data[as_columns.keys()].rename(columns=as_columns)
-    as_data_renamed = as_data_renamed.drop_duplicates(subset=['Name'], keep='first')
-
-    merged_data_bygenre = pd.merge(gp_data_renamed, as_data_renamed, on='Genre', how='outer') # Merging data by 'Genre'
-    merged_data_bygenre['Genre'] = merged_data_bygenre['Genre'].str.split(';')  # Splitting any double-named entries
-    merged_data_bygenre = merged_data_bygenre.explode('Genre')
-    merged_data_bygenre.groupby('Genre').agg(lambda x: '; '.join(map(str, x))).reset_index()  # Re-joining the split entries
+    for index, row in as_data.iterrows():
+        # Iterate through the mapping dictionary
+        for genre, values in category_mapping.items():
+            # Check if the genre in the 'Google Genre' column is in the values of the mapping dictionary
+            if row['Genre'] in values:
+                # Replace the genre in the 'Apple Genre' column with the corresponding key from the mapping dictionary
+                as_data.at[index, 'Genre'] = genre
 
 
-    merged_data_bygenre.drop(merged_data_bygenre[merged_data_bygenre['Genre'] == 'February 11, 2018'].index, inplace=True) # Removing a particular row
-    merged_data_bygenre = merged_data_bygenre[['Genre', 'App Store Rating', 'Google Play Rating']]  # Creating a DF with only App Store and Play Store ratings indexed by Genre
+    print(as_data['Genre'])
 
+    # Split genres separated by ";" into separate values and create multiple rows for each app
+    gp_df_split = gp_data.assign(Genre=gp_data['Genre'].str.split(';')).explode('Genre')
 
-    exploded_df = merged_data_bygenre.explode('Genre')
-    exploded_df['Condensed_Genre'] = exploded_df['Genre'].apply(lambda x: next((key for key, value in category_mapping.items() if x in value), x))
+    # Apply genre mapping to the split genres
+    gp_df_split['Genre'] = gp_df_split['Genre'].apply(
+        lambda x: next((key for key, value in category_mapping.items() if x.strip() in value), 'Other') if pd.notna(x) else 'Other')
 
-    condensed_df = exploded_df.groupby('Condensed_Genre').agg({'App Store Rating': list, 'Google Play Rating': list}).reset_index()
+    # Group by app name and concatenate the condensed genres
+    gp_df_condensed = gp_df_split.groupby('Name')['Genre'].apply(
+        lambda x: ';'.join(set(x)) if not x.isnull().all() else '').reset_index()
 
-    merged_data_bygenre = condensed_df # Renaming the condensed DataFrame
-
-    merged_data_bygenre = merged_data_bygenre[['Condensed_Genre', 'App Store Rating', 'Google Play Rating']]
-
-    return merged_data_bygenre
-
+    print(gp_df_condensed['Genre'])
 
 def merge_data(gp_data, as_data):
     gp_columns = {

@@ -19,8 +19,7 @@ category_mapping = {
 }
 
 if __name__ == "__main__":
-    filtered_play_store, filtered_app_store = filter_matching_names(play_store_data, app_store_data)
-    
+
     merged_data_bygenre = merge_data_genre(play_store_data, app_store_data, category_mapping)
     merged_data = merge_data(play_store_data, app_store_data)    
 

@@ -25,7 +25,7 @@ def ratings_visualization(merged_data_bygenre):
     This functions takes a handful of popular Genres and performs
     statistical analyses and visualizations of ratings
     '''
-
+'''
     avg_app_store_ratings = []
     avg_google_play_ratings = []
     genres = merged_data_bygenre['Condensed_Genre']
@@ -39,6 +39,7 @@ def ratings_visualization(merged_data_bygenre):
 
         # Calculate average ratings for Google Play (excluding NaN values)
         google_play_ratings = [rating for rating in row['Google Play Rating'] if not pd.isna(rating)]
+        print(len(google_play_ratings))
         avg_google_play_rating = sum(google_play_ratings) / len(google_play_ratings) if google_play_ratings else None
         avg_google_play_ratings.append(avg_google_play_rating)
 
@@ -57,6 +58,7 @@ def ratings_visualization(merged_data_bygenre):
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.show()
+    '''
 def price_rating_correlation(merged_data):
     '''
     Function for visualizing the correlation between application price and 
