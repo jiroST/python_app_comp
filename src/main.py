@@ -6,16 +6,20 @@ from figures import *
 play_store_data = pd.read_csv("../data/googleplaystore.csv")
 app_store_data = pd.read_csv("../data/AppleStore.csv")
 category_mapping = {
-    'Games': ['Puzzle', 'Board', 'Adventure', 'Action', 'Action & Adventure', 'Games', 'Game', 'Racing', 'Strategy', 'Trivia', 'Word', 'Role Playing', 'Pretend Play', 'Casual', 'Card', 'Casino', 'Brain Games', 'Casual', 'Arcade'],
+    'Games': ['Puzzle', 'Board', 'Adventure', 'Action', 'Action & Adventure', 'Games', 'Game', 'Racing', 'Strategy',
+              'Trivia', 'Word', 'Role Playing', 'Pretend Play', 'Casual', 'Card', 'Casino', 'Brain Games', 'Casual', 'Arcade'],
     'Health & Fitness': ['Health & Fitness', 'Medical'],
-    'Social': ['Social', 'Social Networking', 'House & Home', 'Food & Drink', 'Lifestyle', 'News & Magazines', 'Productivity', 'Utilities', 'Reference', 'Parenting', 'News', 'Dating', 'Catalogs', 'Communication'],
+    'Social': ['Social', 'Social Networking', 'House & Home', 'Food & Drink', 'Lifestyle', 'News & Magazines',
+               'Productivity', 'Utilities', 'Reference', 'Parenting', 'News', 'Dating', 'Catalogs', 'Communication'],
     'Shopping': ['Shopping', 'Books & Reference', 'Beauty', 'Auto & Vehicles', 'Book'],
-    'Education': ['Education', 'Photo & Video', 'Photography', 'Personalization', 'Video Players & Editors', 'Educational'],
+    'Education': ['Education', 'Photo & Video', 'Photography', 'Personalization', 'Video Players & Editors',
+                  'Educational'],
     'Business': ['Business', 'Tools', 'Events', 'Finance'],
     'Food & Drink': ['Food & Drink'], 
     'Music': ['Music', 'Music & Audio', 'Music & Video'],
     'Travel': ['Travel', 'Travel & Local', 'Maps & Navigation', 'Weather', 'Navigation'],
-    'Entertainment': ['Entertainment', 'Simulation', 'Sports', 'Libraries & Demo', 'Creativity', 'Comics', 'Art & Design']
+    'Entertainment': ['Entertainment', 'Simulation', 'Sports', 'Libraries & Demo', 'Creativity', 'Comics',
+                      'Art & Design']
 }
 
 if __name__ == "__main__":

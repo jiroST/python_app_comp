@@ -18,30 +18,62 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     as_data.rename(columns={'track_name': 'Name'}, inplace=True)
     as_data.rename(columns={'prime_genre': 'Genre'}, inplace=True)
 
+    # Condensing App Store Genres
     for index, row in as_data.iterrows():
         # Iterate through the mapping dictionary
         for genre, values in category_mapping.items():
-            # Check if the genre in the 'Google Genre' column is in the values of the mapping dictionary
+            # Check if the genre in the 'Genre' column is in the values of the mapping dictionary
             if row['Genre'] in values:
                 # Replace the genre in the 'Apple Genre' column with the corresponding key from the mapping dictionary
                 as_data.at[index, 'Genre'] = genre
 
-
     print(as_data['Genre'])
 
     # Split genres separated by ";" into separate values and create multiple rows for each app
-    gp_df_split = gp_data.assign(Genre=gp_data['Genre'].str.split(';')).explode('Genre')
+    gp_data['Genre'] = gp_data['Genre'].apply(lambda x: x.split(';')[0] if ';' in x else x)
+    gp_data_condensed = gp_data
 
-    # Apply genre mapping to the split genres
-    gp_df_split['Genre'] = gp_df_split['Genre'].apply(
-        lambda x: next((key for key, value in category_mapping.items() if x.strip() in value), 'Other') if pd.notna(x) else 'Other')
 
-    # Group by app name and concatenate the condensed genres
-    gp_df_condensed = gp_df_split.groupby('Name')['Genre'].apply(
-        lambda x: ';'.join(set(x)) if not x.isnull().all() else '').reset_index()
+    # Condensing Play Store Genres
+    for index, row in gp_data_condensed.iterrows():
+        # Iterate through the mapping dictionary
+        for genre, values in category_mapping.items():
+            # Check if the genre in the 'Genre' column is in the values of the mapping dictionary
+            if row['Genre'] in values:
+                # Replace the genre in the 'Apple Genre' column with the corresponding key from the mapping dictionary
+                gp_data_condensed.at[index, 'Genre'] = genre
 
-    print(gp_df_condensed['Genre'])
+    gp_data_condensed = gp_data_condensed[gp_data_condensed['Genre'] != 'February 11, 2018']
 
+    print(gp_data_condensed['Genre'])
+
+
+    counter = 0
+    for value in gp_data_condensed['Genre']:
+        # Check if the genre in the 'Genre' column is in the values of the mapping dictionary
+        if value in category_mapping:
+            # Replace the genre in the 'Apple Genre' column with the corresponding key from the mapping dictionary
+            counter += 1
+        else:
+            print(f" '{value} is not in category mapping")
+
+    print(len(gp_data_condensed) - counter, "problem rows")
+
+    as_sorted = as_data.sort_values(by='Genre')
+    print(as_sorted['Genre'])
+
+    gp_sorted = gp_data_condensed.sort_values(by='Genre')
+    print(gp_sorted['Genre'])
+
+    # Aggregate data by counting occurrences of each genre
+    as_sorted_agg = as_sorted.groupby('Genre').size().reset_index(name='Count App Store')
+    gp_sorted_agg = gp_sorted.groupby('Genre').size().reset_index(name='Count Google Play Store')
+
+    # Merge aggregated data
+    Display_Counts_df = pd.merge(as_sorted_agg, gp_sorted_agg, on='Genre', how='outer')
+    print(Display_Counts_df)
+
+    return Display_Counts_df
 def merge_data(gp_data, as_data):
     gp_columns = {
         'App': 'Name',  
