@@ -28,7 +28,7 @@ def merge_data_genre(gp_data, as_data, category_mapping):
                 # Replace the genre in the 'Apple Genre' column with the corresponding key from the mapping dictionary
                 as_data.at[index, 'Genre'] = genre
 
-    print(as_data['Genre'])
+    #print(as_data['Genre'])
 
     # Split genres separated by ";" into separate values and create multiple rows for each app
     gp_data['Genre'] = gp_data['Genre'].apply(lambda x: x.split(';')[0] if ';' in x else x)
@@ -46,7 +46,7 @@ def merge_data_genre(gp_data, as_data, category_mapping):
 
     gp_data_condensed = gp_data_condensed[gp_data_condensed['Genre'] != 'February 11, 2018']
 
-    print(gp_data_condensed['Genre'])
+    #print(gp_data_condensed['Genre'])
 
 
     counter = 0
@@ -58,28 +58,29 @@ def merge_data_genre(gp_data, as_data, category_mapping):
         else:
             print(f" '{value} is not in category mapping")
 
-    print(len(gp_data_condensed) - counter, "problem rows")
-
+    # Order both datasets by genre
     as_sorted = as_data.sort_values(by='Genre')
-    print(as_sorted['Genre'])
-
     gp_sorted = gp_data_condensed.sort_values(by='Genre')
-    print(gp_sorted['Genre'])
 
     # Aggregate data by counting occurrences of each genre
     as_sorted_agg = as_sorted.groupby('Genre').size().reset_index(name='Count App Store')
     gp_sorted_agg = gp_sorted.groupby('Genre').size().reset_index(name='Count Google Play Store')
 
+    # Calculate the average rating for each genre in both datasets
     avg_rating_as = as_sorted.groupby('Genre')['Rating'].mean().reset_index(name='App Store Avg Rating')
     avg_rating_gp = gp_sorted.groupby('Genre')['Rating'].mean().reset_index(name='Google Play Avg Rating')
 
     # Merge aggregated data
     Display_Counts_df = pd.merge(as_sorted_agg, gp_sorted_agg, on='Genre', how='outer')
-    merged_df = pd.merge(Display_Counts_df, avg_rating_as, on='Genre', how='left')
-    merged_df = pd.merge(Display_Counts_df, avg_rating_gp, on='Genre', how='left')
-    print(merged_df)
+    merged_data_bygenre = pd.merge(Display_Counts_df, avg_rating_as, on='Genre', how='left')
+    merged_data_bygenre = pd.merge(merged_data_bygenre, avg_rating_gp, on='Genre', how='left')
 
-    return Display_Counts_df
+    # Display settings to show all rows and columns of final DataFrame
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    print(merged_data_bygenre)
+
+    return merged_data_bygenre
 def merge_data(gp_data, as_data):
 
     gp_columns = {
