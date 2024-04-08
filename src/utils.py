@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import re
 import matplotlib.pyplot as plt
-
+import os
 
 def clean_name(name):
     '''
@@ -43,16 +43,18 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     print(gp_df_condensed['Genre'])
 
 def merge_data(gp_data, as_data):
+
     gp_columns = {
-        'App': 'Name',  
+        'App': 'Name', 
         'Price': 'Google Play Price',
         'Rating': 'Google Play Rating',
         'Size': 'Google Play Size',
         'Genres': 'Google Play Genre',
         'Reviews': 'Google Play Reviews'
     }
-    gp_data_renamed = gp_data[gp_columns.keys()].rename(columns=gp_columns)
+    gp_data_renamed = gp_data[list(gp_columns.keys())].rename(columns=gp_columns)
     gp_data_renamed = gp_data_renamed.drop_duplicates(subset=['Name'], keep='first')
+    
 
     as_columns = {
         'track_name': 'Name',  
@@ -71,9 +73,6 @@ def merge_data(gp_data, as_data):
     return merged_data
 
 def compare_price_std_avg_visualized(data, categories):
-    filtered = data['Google Play Price'].astype(str).str.contains(r'^\$?\d+(\.\d+)?$', na=False)
-    data = data[filtered]
-    data['Google Play Price'] = data['Google Play Price'].astype(str).str.replace('$', '').astype(float)
 
     gp_std_devs = []
     as_std_devs = []
@@ -81,14 +80,17 @@ def compare_price_std_avg_visualized(data, categories):
     as_avgs = []
 
     for category in categories:
-        google_play_data = data[data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)]
-        app_store_data = data[data['App Store Genre'].astype(str).str.contains(category, na=False, case=False)]
-        
+        #google_play_data = data[data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)]
+        google_play_data = data[(data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)) & (data['Google Play Price'] <= 100)]
+        app_store_data = data[(data['App Store Genre'].astype(str).str.contains(category, na=False, case=False)) & (data['App Store Price'] <= 100)]
+
+
         gp_std_devs.append(google_play_data['Google Play Price'].std())
         as_std_devs.append(app_store_data['App Store Price'].std())
         gp_avgs.append(google_play_data['Google Play Price'].mean())
         as_avgs.append(app_store_data['App Store Price'].mean())
-        
+
+        # Debug prints
         print(f"Category: {category}")
         print(f"  Google Play Avg. Price: ${gp_avgs[-1]:.2f}")
         print(f"  App Store Avg. Price: ${as_avgs[-1]:.2f}")
@@ -97,20 +99,19 @@ def compare_price_std_avg_visualized(data, categories):
         print("")
 
     x = range(len(categories))  
-    width = 0.35  
-
+    width = 0.15
     fig, ax = plt.subplots()
-    rects1 = ax.bar(x, gp_std_devs, width, label='Google Play Std Dev')
-    rects2 = ax.bar([p + width for p in x], as_std_devs, width, label='App Store Std Dev')
-    rects3 = ax.bar(x, gp_avgs, width, bottom=gp_std_devs, label='Google Play Avg Price', alpha=0.5)
-    rects4 = ax.bar([p + width for p in x], as_avgs, width, bottom=as_std_devs, label='App Store Avg Price', alpha=0.5)
 
-    ax.set_ylabel('Prices')
-    ax.set_title('Average and Standard Deviation of Prices by Category and Store')
-    ax.set_xticks([p + width / 2 for p in x])
-    ax.set_xticklabels(categories)
+    rects1 = ax.bar(x, gp_avgs, width, label='Google Play Avg Price')
+    rects2 = ax.bar([p + width for p in x], as_avgs, width, label='App Store Avg Price')
+    rects3 = ax.bar([p + width*2 for p in x], gp_std_devs, width, label='Google Play Std Dev')
+    rects4 = ax.bar([p + width*3 for p in x], as_std_devs, width, label='App Store Std Dev')
+
+    ax.set_ylabel('Price ($)')
+    ax.set_title('Average Prices and Standard Deviation by Category and Store')
+    ax.set_xticks([p + width*1.5 for p in x])
+    ax.set_xticklabels(categories, rotation=45)
     ax.legend()
-
     fig.tight_layout()
     plt.show()
 
