@@ -32,7 +32,6 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     gp_data['Genre'] = gp_data['Genre'].apply(lambda x: x.split(';')[0] if ';' in x else x)
     gp_data_condensed = gp_data
 
-
     # Condensing Play Store Genres
     for index, row in gp_data_condensed.iterrows():
         # Iterate through the mapping dictionary
@@ -43,9 +42,6 @@ def merge_data_genre(gp_data, as_data, category_mapping):
                 gp_data_condensed.at[index, 'Genre'] = genre
 
     gp_data_condensed = gp_data_condensed[gp_data_condensed['Genre'] != 'February 11, 2018']
-
-    #print(gp_data_condensed['Genre'])
-
 
     counter = 0
     for value in gp_data_condensed['Genre']:
@@ -76,7 +72,6 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     # Display settings to show all rows and columns of final DataFrame
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
-    print(merged_data_bygenre)
 
     return merged_data_bygenre
 def merge_data(gp_data, as_data):

@@ -23,11 +23,10 @@ category_mapping = {
 }
 
 if __name__ == "__main__":
+    merged_data = merge_data(play_store_data, app_store_data)
+    compare_price_std_avg_visualized(merged_data, category_mapping)
+    price_rating_correlation(merged_data)
 
     merged_data_bygenre = merge_data_genre(play_store_data, app_store_data, category_mapping)
     ratings_visualization(merged_data_bygenre)
     merge_data_genre(play_store_data, app_store_data, category_mapping)
-
-    merged_data = merge_data(play_store_data, app_store_data)
-    compare_price_std_avg_visualized(merged_data, category_mapping)
-    price_rating_correlation(merged_data)
