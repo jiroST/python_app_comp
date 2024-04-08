@@ -15,6 +15,7 @@ def clean_name(name):
 def merge_data_genre(gp_data, as_data, category_mapping):
     gp_data.rename(columns={'App': 'Name'}, inplace=True)
     gp_data.rename(columns={'Genres': 'Genre'}, inplace=True)
+    as_data.rename(columns={'user_rating': 'Rating'}, inplace=True)
     as_data.rename(columns={'track_name': 'Name'}, inplace=True)
     as_data.rename(columns={'prime_genre': 'Genre'}, inplace=True)
 
@@ -69,9 +70,14 @@ def merge_data_genre(gp_data, as_data, category_mapping):
     as_sorted_agg = as_sorted.groupby('Genre').size().reset_index(name='Count App Store')
     gp_sorted_agg = gp_sorted.groupby('Genre').size().reset_index(name='Count Google Play Store')
 
+    avg_rating_as = as_sorted.groupby('Genre')['Rating'].mean().reset_index(name='App Store Avg Rating')
+    avg_rating_gp = gp_sorted.groupby('Genre')['Rating'].mean().reset_index(name='Google Play Avg Rating')
+
     # Merge aggregated data
     Display_Counts_df = pd.merge(as_sorted_agg, gp_sorted_agg, on='Genre', how='outer')
-    print(Display_Counts_df)
+    merged_df = pd.merge(Display_Counts_df, avg_rating_as, on='Genre', how='left')
+    merged_df = pd.merge(Display_Counts_df, avg_rating_gp, on='Genre', how='left')
+    print(merged_df)
 
     return Display_Counts_df
 def merge_data(gp_data, as_data):
