@@ -112,10 +112,8 @@ def compare_price_std_avg_visualized(data, categories):
     as_avgs = []
 
     for category in categories:
-        #google_play_data = data[data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)]
-        google_play_data = data[(data['Google Play Genre'].astype(str).str.contains(category, na=False, case=False)) & (data['Google Play Price'] <= 100)]
-        app_store_data = data[(data['App Store Genre'].astype(str).str.contains(category, na=False, case=False)) & (data['App Store Price'] <= 100)]
-
+        google_play_data = data[data['Google Play Genre'].astype(str).isin(categories[category])]
+        app_store_data = data[data['App Store Genre'].astype(str).isin(categories[category])]
 
         gp_std_devs.append(google_play_data['Google Play Price'].std())
         as_std_devs.append(app_store_data['App Store Price'].std())
@@ -135,8 +133,8 @@ def compare_price_std_avg_visualized(data, categories):
     fig, ax = plt.subplots()
 
     rects1 = ax.bar(x, gp_avgs, width, label='Google Play Avg Price')
-    rects2 = ax.bar([p + width for p in x], as_avgs, width, label='App Store Avg Price')
-    rects3 = ax.bar([p + width*2 for p in x], gp_std_devs, width, label='Google Play Std Dev')
+    rects2 = ax.bar([p + width for p in x], gp_std_devs, width, label='Google Play Std Dev')
+    rects3 = ax.bar([p + width*2 for p in x], as_avgs, width, label='App Store Avg Price')
     rects4 = ax.bar([p + width*3 for p in x], as_std_devs, width, label='App Store Std Dev')
 
     ax.set_ylabel('Price ($)')
@@ -156,7 +154,10 @@ def correct_data_types(merged_data):
     Makes numbers numbers and removes extra things.
     '''
     merged_data['Google Play Price'] = merged_data['Google Play Price'].astype(str).str.replace('$', '')
+    merged_data['Google Play Rating'] = merged_data['Google Play Rating'].map(lambda x: round(x * 2) / 2, 'ignore')
     merged_data['Google Play Price'] = pd.to_numeric(merged_data['Google Play Price'], errors='coerce')
+    merged_data.loc[merged_data['Google Play Price'] > 100, 'Google Play Price'] = None
+    merged_data.loc[merged_data['App Store Price'] > 100, 'App Store Price'] = None    
     merged_data['App Store Price'] = pd.to_numeric(merged_data['App Store Price'], errors='coerce')
     merged_data['Google Play Rating'] = pd.to_numeric(merged_data['Google Play Rating'], errors='coerce')
     merged_data['App Store Rating'] = pd.to_numeric(merged_data['App Store Rating'], errors='coerce')
