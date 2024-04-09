@@ -4,13 +4,6 @@ import re
 import matplotlib.pyplot as plt
 import os
 
-def clean_name(name):
-    '''
-    This function edits the app name to lowercase and removes any special characters or additional spaces etc.
-    '''
-    name = name.lower()
-    name = re.sub(r'[^a-zA-Z0-9]', '', name)
-    return name
 
 def merge_data_genre(gp_data, as_data, category_mapping):
     gp_data.rename(columns={'App': 'Name'}, inplace=True)
