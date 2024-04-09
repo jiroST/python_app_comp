@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 from utils import *
+import seaborn as sns
 
-
-def match_pie_chart(gp_data, as_data):
-    '''
-    This function visualizes the filtering function, drawing a pie chart to show the percentages of matching and unmatching values. 
-    '''
+'''def match_pie_chart(gp_data, as_data):
+    
+    #This function visualizes the filtering function, drawing a pie chart to show the percentages of matching and unmatching values. 
+    
     gp_count = len(gp_data)
     as_count = len(as_data)
     filtered_gp, filtered_as = filter_matching_names(gp_data, as_data)
@@ -18,7 +18,24 @@ def match_pie_chart(gp_data, as_data):
     colors = ['#ff9999','#66b3ff','#99ff99']
     plt.figure(figsize=(10, 10))
     plt.pie(allocation, labels=labels, colors=colors, autopct='%1.1f%%')
-    plt.show()
+    plt.show()'''
+
+def category_pie_chart(merged_data): 
+    
+    merged_data['sum'] = merged_data[['Count App Store', 'Count Google Play Store']].sum(axis=1)
+    merged_data_sorted = merged_data.sort_values('sum', ascending = False)
+    print("The sorted sum of the App Store and Play Store counts:\n", merged_data_sorted)
+    merged_data_sorted_top = merged_data_sorted[:7]
+
+    merged_data_sorted_last = pd.DataFrame(data = {'Genre' : ['Other genres'], 'sum' : [merged_data['sum'][7:].sum()]})
+
+    merged_data_sorted_com = pd.concat([merged_data_sorted_top, merged_data_sorted_last])
+
+    plt.figure()
+    plt.pie(merged_data_sorted_com['sum'], labels=merged_data_sorted_com['Genre'], autopct='%1.1f%%')
+    plt.legend(loc='upper left')
+    plt.title('The division of applications among genres')
+    plt.show()  
 
 def ratings_visualization(merged_data_bygenre):
     '''
@@ -89,38 +106,33 @@ def price_rating_correlation(merged_data):
 
     plt.show()
 
+def ave_rating_cost_KDE_plot(merged_data):
+    '''
+    Function for visualizing whether an application is paid or free affects average rating. 
+    Includes both Apple app store and Google play store data.
+    '''
 
-def price_rating_with_ranges(merged_data):
-    '''
-    To help with visualising, price ranges have been set. Pie chart. 
-    The ranges are:
-        free, 0-5 USD, 5-20 USD, 20-50 USD and more than 50 USD.
-    '''
-    pass
+    plt.figure(figsize=(10, 6))
 
-def downloads_age_rating():
-    '''
-    Function for analysing the relationship between amount of downloads 
-    and contentrating.
-    '''
-    pass
+    merged_data = merged_data[merged_data['App Store Price'] < 100]
+    merged_data = merged_data[merged_data['Google Play Price'] < 100]
 
-def downloads_rating_correlation():
-    '''s
-    This function visualizes the relationship between the amount of 
-    downloads and ratings.
-    '''
-    pass
+    free_apps_app = merged_data[merged_data['App Store Price'] == 0]
+    paid_apps_app = merged_data[merged_data['App Store Price'] > 0]
+    free_apps_play = merged_data[merged_data['Google Play Price'] == 0]
+    paid_apps_play = merged_data[merged_data['Google Play Price'] > 0]
 
-def review_count_rating_correlation():
-    '''
-    This function takes into account the amount of reviews when considering ratings.
-    '''
-    pass
+    sns.kdeplot(data=free_apps_app, x='App Store Rating', label='Free Apps (Apple)', fill=True)
+    sns.kdeplot(data=paid_apps_app, x='App Store Rating', label='Paid Apps (Apple)', fill=True)
+    sns.kdeplot(data=free_apps_play, x='Google Play Rating', label='Free Apps (Google)', fill=True)
+    sns.kdeplot(data=paid_apps_play, x='Google Play Rating', label='Paid Apps (Google)', fill=True)
 
-def review_download_ratio():
-    '''
-    This function gives the ratio between total amount of downloads and reviews.
-    '''
-    pass
+    plt.xlim(1, 5)
 
+    plt.title('Difference in paid and free rating')
+    plt.xlabel('Average Rating')
+    plt.ylabel('Density')
+    plt.legend(loc='upper left')
+    plt.grid(True)
+
+    plt.show()
