@@ -138,10 +138,6 @@ def compare_price_std_avg_visualized(data, categories):
     fig.tight_layout()
     plt.show()
 
-def filter_no_reviews(merged_data):
-    no_reviews = merged_data[merged_data['Google Play Reviews'] == 0 or merge_data['App Store Reviews'] == 0]
-    return no_reviews
-
 def correct_data_types(merged_data):
     '''
     Makes numbers numbers and removes extra things.
